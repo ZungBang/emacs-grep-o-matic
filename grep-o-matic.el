@@ -145,45 +145,42 @@ Optionaly prompt for regexp to search."
   "Search repository for word at point.
 Optionaly prompt for regexp to search."
   (interactive "P")
-  (let ((compilation-buffer-name-function 'grep-o-matic-buffer-name-function))
-    (grep-o-matic-directory prompt (grep-o-matic-repository-root buffer-file-name))))
+  (grep-o-matic-directory prompt (grep-o-matic-repository-root buffer-file-name)))
 
 (defun grep-o-matic-current-directory (&optional prompt)
   "Search current directory for word at point.
 Optionaly prompt for regexp to search."
   (interactive "P")
-  (let ((compilation-buffer-name-function 'grep-o-matic-buffer-name-function))
-    (grep-o-matic-directory prompt (if buffer-file-name
-                                       (file-name-directory buffer-file-name)
-                                     nil))))
+  (grep-o-matic-directory prompt (if buffer-file-name
+                                     (file-name-directory buffer-file-name)
+                                   nil)))
 
 (defun grep-o-matic-visited-files (&optional prompt)
   "Search currently visited files for word at point.
 Optionaly prompt for regexp to search."
   (interactive "P")
-  (let ((compilation-buffer-name-function 'grep-o-matic-buffer-name-function))
-    (let ((regexp (grep-o-matic-get-regexp prompt))
-	  (files (let ((directory-abbrev-alist
-			(cons (cons (regexp-quote (expand-file-name default-directory)) "./") directory-abbrev-alist)))
-		   (mapconcat 'abbreviate-file-name
-			      (apply 'nconc
-				     (mapcar '(lambda (buffer)
-						(let ((file (buffer-file-name buffer)))
-						  (if (and file
-							   (cond ((featurep 'ange-ftp)
-								  (not (ange-ftp-ftp-name file)))
-								 ((featurep 'efs)
-								  (not (efs-ftp-path file)))
-								 (t t)))
-						      (list file))))
-					     (buffer-list)))
-			      " ")))
-	  (dir "")
-	  (excl ""))
-      (progn
-	(grep-compute-defaults)
-        (save-some-buffers (not compilation-ask-about-save) nil)
-	(grep (grep-expand-template grep-template regexp files dir excl))))))
+  (let ((regexp (grep-o-matic-get-regexp prompt))
+        (files (let ((directory-abbrev-alist
+                      (cons (cons (regexp-quote (expand-file-name default-directory)) "./") directory-abbrev-alist)))
+                 (mapconcat 'abbreviate-file-name
+                            (apply 'nconc
+                                   (mapcar '(lambda (buffer)
+                                              (let ((file (buffer-file-name buffer)))
+                                                (if (and file
+                                                         (cond ((featurep 'ange-ftp)
+                                                                (not (ange-ftp-ftp-name file)))
+                                                               ((featurep 'efs)
+                                                                (not (efs-ftp-path file)))
+                                                               (t t)))
+                                                    (list file))))
+                                           (buffer-list)))
+                            " ")))
+        (dir "")
+        (excl ""))
+    (progn
+      (grep-compute-defaults)
+      (save-some-buffers (not compilation-ask-about-save) nil)
+      (grep (grep-expand-template grep-template regexp files dir excl)))))
 
 ;; key bindings
 (define-prefix-command 'grep-o-matic-map)
