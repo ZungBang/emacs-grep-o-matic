@@ -1,6 +1,6 @@
 ;;; grep-o-matic.el --- auto grep word under cursor
 
-;; Copyright (C) 2008 Avi Rozen
+;; Copyright (C) 2008-2012 Avi Rozen
 
 ;; Author: Avi Rozen <avi.rozen@gmail.com>
 ;; Keywords: tools, processes, search
