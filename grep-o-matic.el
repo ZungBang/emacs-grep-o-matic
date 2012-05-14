@@ -162,7 +162,7 @@ Optionaly prompt for regexp to search."
   (let ((regexp (grep-o-matic-get-regexp prompt))
         (files (let ((directory-abbrev-alist
                       (cons (cons (regexp-quote (expand-file-name default-directory)) "./") directory-abbrev-alist)))
-                 (mapconcat 'abbreviate-file-name
+                 (mapconcat (lambda (fn) (abbreviate-file-name (shell-quote-argument fn)))
                             (apply 'nconc
                                    (mapcar '(lambda (buffer)
                                               (let ((file (buffer-file-name buffer)))
