@@ -168,11 +168,7 @@ Optionaly prompt for regexp to search."
                                    (mapcar '(lambda (buffer)
                                               (let ((file (buffer-file-name buffer)))
                                                 (if (and file
-                                                         (cond ((featurep 'ange-ftp)
-                                                                (not (ange-ftp-ftp-name file)))
-                                                               ((featurep 'efs)
-                                                                (not (efs-ftp-path file)))
-                                                               (t t)))
+                                                         (not (file-remote-p file)))
                                                     (list file))))
                                            (buffer-list)))
                             " ")))
@@ -185,12 +181,12 @@ Optionaly prompt for regexp to search."
 
 ;; key bindings
 (define-prefix-command 'grep-o-matic-map)
-(define-key grep-o-matic-map "\M-/" 'grep-o-matic-repository)
-(define-key grep-o-matic-map "/" 'grep-o-matic-repository)
-(define-key grep-o-matic-map "\M-." 'grep-o-matic-current-directory)
-(define-key grep-o-matic-map "." 'grep-o-matic-current-directory)
-(define-key grep-o-matic-map "\M-," 'grep-o-matic-visited-files)
-(define-key grep-o-matic-map "," 'grep-o-matic-visited-files)
+(define-key 'grep-o-matic-map "\M-/" 'grep-o-matic-repository)
+(define-key 'grep-o-matic-map "/" 'grep-o-matic-repository)
+(define-key 'grep-o-matic-map "\M-." 'grep-o-matic-current-directory)
+(define-key 'grep-o-matic-map "." 'grep-o-matic-current-directory)
+(define-key 'grep-o-matic-map "\M-," 'grep-o-matic-visited-files)
+(define-key 'grep-o-matic-map "," 'grep-o-matic-visited-files)
 (global-set-key "\M-]" 'grep-o-matic-map)
 
 (provide 'grep-o-matic)
