@@ -142,12 +142,14 @@ Optionaly prompt for regexp to search."
 		 directory
 	       default-directory)))))
 
+;;;###autoload
 (defun grep-o-matic-repository (&optional prompt)
   "Search repository for word at point.
 Optionaly prompt for regexp to search."
   (interactive "P")
   (grep-o-matic-directory prompt (grep-o-matic-repository-root buffer-file-name)))
 
+;;;###autoload
 (defun grep-o-matic-current-directory (&optional prompt)
   "Search current directory for word at point.
 Optionaly prompt for regexp to search."
@@ -156,6 +158,7 @@ Optionaly prompt for regexp to search."
                                      (file-name-directory buffer-file-name)
                                    nil)))
 
+;;;###autoload
 (defun grep-o-matic-visited-files (&optional prompt)
   "Search currently visited files for word at point.
 Optionaly prompt for regexp to search."
