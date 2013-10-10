@@ -26,11 +26,16 @@
 
 ;;; Commentary:
 
-;; This package lets the user launch a search, with a single key combination,
-;; for the word under the cursor, in the current repository, or the current
-;; directory, or in the set of currently open files.
+;; This package lets the user launch a search, with a single key
+;; combination, for the word under the cursor, in the current
+;; repository, or the current directory, or in the set of currently
+;; open files.
 ;;
-;; Works nicely in combination with grep-a-lot and repository-root libraries.
+;; Repository-wide search should work out-of-the-box for vc backends
+;; known to Emacs, and may be further enhanced with the
+;; repository-root library.
+;;
+;; Works nicely in combination with grep-a-lot.
 ;;
 ;; Installation:
 ;;
@@ -38,12 +43,8 @@
 ;;    byte-compile it (e.g. with `M-x byte-compile-file') for better
 ;;    performance.
 ;; 2. Add the following to your ~/.emacs:
-;;    ;(require 'repository-root) ; optional: needed for repository-wide search
 ;;    (require 'grep-o-matic)
 ;; 3. Customize grep-o-matic with `M-x customize-group grep-o-matic'
-;;
-;; Repository-wide search requires customization of the repository root function,
-;; unless the repository-root libarary is loaded before grep-o-matic.
 ;;
 ;; Default Key Bindings:
 ;;
@@ -56,6 +57,12 @@
 ;;; Code:
 
 (require 'grep)
+(require 'vc)
+
+(eval-when-compile
+  (unless (featurep 'repository-root)
+    (defsubst repository-root (filename)
+      nil)))
 
 (defgroup grep-o-matic nil
   "Automation layer for grep.el"
@@ -70,17 +77,6 @@
   :group 'grep-o-matic
   :type '(repeat string))
 
-(defcustom grep-o-matic-repository-root-function (if (featurep 'repository-root)
-                                                     'repository-root
-                                                   nil)
-  "*If non-nil, a function that returns the current file's repository root directory.
-The function is called with a single string argument (a file name) and should
-return either nil, or a string, which is the root directory of that file's repository.
-The default value is nil, unless the repository-root library is loaded before
-loading grep-o-matic, in which case the default value is `repository-root'."
-  :group 'grep-o-matic
-  :type '(choice (const nil) (function)))
-
 (defcustom grep-o-matic-ask-about-save t
   "*If non-nil ask which buffers to save before performing a search.
 Otherwise, all modified buffers are saved without asking."
@@ -88,17 +84,18 @@ Otherwise, all modified buffers are saved without asking."
   :type 'boolean)
 
 (defun grep-o-matic-repository-root (filename)
-  "Attempt to deduce the current file's repository root directory.
-You should customize `grep-o-matic-repository-root-function' and provide a function that
-does the actual work, based of the type of SCM tool that you're using."
+  "Attempt to deduce the current file's repository root directory."
   (if (null filename)
       nil
     (let* ((directory (file-name-directory filename))
-           (repository-root (if (and grep-o-matic-repository-root-function
-                                     (functionp grep-o-matic-repository-root-function))
-                                (apply grep-o-matic-repository-root-function (list filename))
-                              nil)))
-      (or repository-root directory))))
+	   (backend (vc-backend filename))
+	   (vc_rootdir (if backend
+			   (vc-call-backend backend 'root directory)
+			 nil))
+	   (rr_rootdir (if (featurep 'repository-root)
+			   (repository-root filename)
+			 nil)))
+      (or vc_rootdir rr_rootdir directory))))
 
 (defun grep-o-matic-get-regexp (prompt)
   "Get the default regexp or query the user for it."
