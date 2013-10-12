@@ -33,7 +33,8 @@
 ;;
 ;; Repository-wide search should work out-of-the-box for vc backends
 ;; known to Emacs, and may be further enhanced with the
-;; repository-root library.
+;; repository-root library. Git grep may optionally be used instead of
+;; grep in git repositories.
 ;;
 ;; Works nicely in combination with grep-a-lot.
 ;;
@@ -45,7 +46,7 @@
 ;; 2. Add the following to your ~/.emacs:
 ;;    (require 'grep-o-matic)
 ;; 3. Customize grep-o-matic with `M-x customize-group grep-o-matic'
-;;
+;;    
 ;; Default Key Bindings:
 ;;
 ;; M-] M-/         Search for current word in current repository
@@ -70,7 +71,6 @@
   :group 'convenience
   :prefix "grep-o-matic-")
 
-
 (defcustom grep-o-matic-search-patterns
   (list "*.cpp" "*.c" "*.h" "*.awk" "*.sh" "*.py" "*.pl" "[Mm]akefile" "*.el")
   "*Search file patterns for use with grep-o-matic-* commands."
@@ -83,10 +83,22 @@ Otherwise, all modified buffers are saved without asking."
   :group 'grep-o-matic
   :type 'boolean)
 
+(defcustom grep-o-matic-use-git-grep nil
+  "*If non-nil use git grep to perfrom search in git
+repositories."
+  :group 'grep-o-matic
+  :type 'boolean)
+
+(defcustom grep-o-matic-git-grep-template "git grep <C> -n -e <R> -- <F>"
+  "Template for git grep command. See `grep-template' for
+more details."
+  :group 'grep-o-matic
+  :type 'string)
+
 (defun grep-o-matic-repository-root (filename)
   "Attempt to deduce the current file's repository root directory."
   (if (null filename)
-      nil
+      default-directory
     (let* ((directory (file-name-directory filename))
 	   (backend (vc-backend filename))
 	   (vc_rootdir (if backend
@@ -106,9 +118,8 @@ Otherwise, all modified buffers are saved without asking."
 	  regexp)
       (grep-read-regexp))))
 
-(defun grep-o-matic-directory (prompt directory)
-  "Search directory for word at point.
-Optionaly prompt for regexp to search."
+(defun grep-o-matic-compute-search-patterns ()
+  "Compute file search glob patterns."
   (let ((patterns grep-o-matic-search-patterns)
 	(extension (if buffer-file-name
 		       (file-name-extension buffer-file-name)
@@ -131,20 +142,53 @@ Optionaly prompt for regexp to search."
 	(setq patterns (list (if extension
 				 (concat "*." extension)
 			       "*"))))
-      (grep-compute-defaults)
-      (save-some-buffers (not grep-o-matic-ask-about-save) nil)
-      (rgrep (grep-o-matic-get-regexp prompt)
-	     (mapconcat (lambda (s) s) patterns " ")
-	     (if directory
-		 directory
-	       default-directory)))))
+      (mapconcat (lambda (s) s) patterns " "))))
+
+
+(defun grep-o-matic-directory (prompt directory)
+  "Search directory for word at point.
+Optionaly prompt for regexp to search."
+  (let ((patterns (grep-o-matic-compute-search-patterns)))
+    (grep-compute-defaults)
+    (save-some-buffers (not grep-o-matic-ask-about-save) nil)
+    (rgrep (grep-o-matic-get-regexp prompt)
+	   patterns
+	   (if directory
+	       directory
+	     default-directory))))
+
+(defun grep-o-matic-git-repository (prompt repository-root)
+  "Search a git repository for word at point.
+Optionaly prompt for regexp to search."
+  (interactive "P")
+  (let ((regexp (grep-o-matic-get-regexp prompt))
+	(patterns (grep-o-matic-compute-search-patterns)))
+    (grep-compute-defaults)
+    (save-some-buffers (not compilation-ask-about-save) nil)
+    (let ((default-directory repository-root))
+      ; Running git grep with no pager (as is necessary) does not play
+      ; well with font-locking, so that next/previous-error do not
+      ; work at all. So we pipe the output of 'git grep' through a
+      ; dummy 'cat'.
+      (grep (grep-expand-template
+	     (concat (grep-expand-template 
+		      grep-o-matic-git-grep-template
+		      regexp
+		      patterns)
+		      " | cat"))))))
 
 ;;;###autoload
 (defun grep-o-matic-repository (&optional prompt)
   "Search repository for word at point.
 Optionaly prompt for regexp to search."
   (interactive "P")
-  (grep-o-matic-directory prompt (grep-o-matic-repository-root buffer-file-name)))
+  (let ((repository-root (grep-o-matic-repository-root buffer-file-name)))
+    (if (and grep-o-matic-use-git-grep
+	     (string-equal "git"
+			   (downcase (symbol-name (vc-backend
+						   buffer-file-name)))))
+	(grep-o-matic-git-repository prompt repository-root)
+      (grep-o-matic-directory prompt repository-root))))
 
 ;;;###autoload
 (defun grep-o-matic-current-directory (&optional prompt)
