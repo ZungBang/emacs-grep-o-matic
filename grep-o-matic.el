@@ -5,7 +5,7 @@
 ;; Author: Avi Rozen <avi.rozen@gmail.com>
 ;; Keywords: tools, processes, search
 ;; URL: https://github.com/ZungBang/emacs-grep-o-matic
-;; Version: 1.0.5
+;; Version: 1.0.6
 
 ;; This file is NOT part of GNU Emacs.
 
