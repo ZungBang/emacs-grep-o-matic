@@ -176,7 +176,7 @@ Optionaly prompt for regexp to search."
 		      grep-o-matic-git-grep-template
 		      regexp
 		      patterns)
-		      " | cat"))))))
+		     " | cat"))))))
 
 ;;;###autoload
 (defun grep-o-matic-repository (&optional prompt)
