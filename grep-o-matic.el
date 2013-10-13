@@ -1,11 +1,11 @@
 ;;; grep-o-matic.el --- auto grep word under cursor
 
-;; Copyright (C) 2008-2012 Avi Rozen
+;; Copyright (C) 2008-2013 Avi Rozen
 
 ;; Author: Avi Rozen <avi.rozen@gmail.com>
 ;; Keywords: tools, processes, search
 ;; URL: https://github.com/ZungBang/emacs-grep-o-matic
-;; Version: 1.0.4
+;; Version: 1.0.5
 
 ;; This file is NOT part of GNU Emacs.
 
