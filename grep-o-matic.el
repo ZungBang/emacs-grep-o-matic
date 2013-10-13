@@ -167,10 +167,10 @@ Optionaly prompt for regexp to search."
     (grep-compute-defaults)
     (save-some-buffers (not compilation-ask-about-save) nil)
     (let ((default-directory repository-root))
-      ; Running git grep with no pager (as is necessary) does not play
-      ; well with font-locking, so that next/previous-error do not
-      ; work at all. So we pipe the output of 'git grep' through a
-      ; dummy 'cat'.
+      ;; Running git grep with no pager (as is necessary) does not play
+      ;; well with font-locking, so that next/previous-error do not
+      ;; work at all. So we pipe the output of 'git grep' through a
+      ;; dummy 'cat'.
       (grep (grep-expand-template
 	     (concat (grep-expand-template 
 		      grep-o-matic-git-grep-template
