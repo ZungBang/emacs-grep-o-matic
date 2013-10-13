@@ -102,7 +102,8 @@ more details."
     (let* ((directory (file-name-directory filename))
 	   (backend (vc-backend filename))
 	   (vc_rootdir (if backend
-			   (vc-call-backend backend 'root directory)
+                           (ignore-errors
+                             (vc-call-backend backend 'root directory))
 			 nil))
 	   (rr_rootdir (if (featurep 'repository-root)
 			   (repository-root filename)
