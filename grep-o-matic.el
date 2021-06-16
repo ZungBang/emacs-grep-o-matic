@@ -210,11 +210,11 @@ Optionaly prompt for regexp to search."
                       (cons (cons (regexp-quote (expand-file-name default-directory)) "./") directory-abbrev-alist)))
                  (mapconcat (lambda (fn) (abbreviate-file-name (shell-quote-argument fn)))
                             (apply 'nconc
-                                   (mapcar '(lambda (buffer)
-                                              (let ((file (buffer-file-name buffer)))
-                                                (if (and file
-                                                         (not (file-remote-p file)))
-                                                    (list file))))
+                                   (mapcar #'(lambda (buffer)
+                                               (let ((file (buffer-file-name buffer)))
+                                                 (if (and file
+                                                          (not (file-remote-p file)))
+                                                     (list file))))
                                            (buffer-list)))
                             " ")))
         (dir "")
