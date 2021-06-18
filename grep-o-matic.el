@@ -108,7 +108,7 @@ more details."
 	   (rr_rootdir (if (featurep 'repository-root)
 			   (repository-root filename)
 			 nil)))
-      (or vc_rootdir rr_rootdir directory))))
+      (or rr_rootdir vc_rootdir directory))))
 
 (defun grep-o-matic-get-regexp (prompt)
   "Get the default regexp or query the user for it."
